@@ -1,3 +1,0 @@
-curl -H "Content-Type: application/json" -X PUT -d "{\"title\":\"My book\",\"price\":\"11.00\"}" http://localhost:8081/api/v1/books
-curl -H "Content-Type: application/json" -X POST -d "{\"id\":\"2\",\"title\":\"Stupid book\",\"price\":\"500.01\"}" http://localhost:8081/api/v1/books
-curl -H "Content-Type: application/json" -X DELETE -d "{\"id\":\"1\"}" http://localhost:8081/api/v1/books
