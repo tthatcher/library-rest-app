@@ -114,9 +114,8 @@ describe('Book routes', function() {
 						.set('Accept', 'application/json')
 						.expect(200)
 						.end(function(err, res) {
-							if (err) {
-								throw err;
-							}	
+							if (err) throw err;
+							
 							var expected = {};
 							expected.title = 'My Book 2';
 							expected.author = 'Dog';
@@ -127,18 +126,16 @@ describe('Book routes', function() {
 								.set('Accept', 'application/json')
 								.expect(200)
 								.end(function(err, res) {
-									if (err) {
-										throw err;
-									}
-									//TODO This actually isn't working
+									if (err) throw err;
+
 									request.get('/api/v1/books')
 										.set('Accept', 'application/json')
-										.expect(function(res) {
-											var actual = res.body[0];
-											actual.title = expected.title;
-											actual.author = expected.author;
-											actual.language = "THIS IS NOT WORKING";
-										  })
+										.expect([{
+											title : expected.title,
+											author : expected.author,
+											language: expected.language,
+											id : expected.id
+										  }])
 										.expect(200, done);
 								});
 						})
@@ -197,9 +194,8 @@ describe('Book routes', function() {
 				.send(validBody)
 				.expect(200)
 				.end(function(err, res) {
-					if (err) {
-						throw err;
-					}
+					if (err) throw err;
+					
 					request.get('/api/v1/books')
 					.expect(200)
 					.end(function(err, res) {

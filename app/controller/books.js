@@ -45,8 +45,8 @@ router.post('/', function(req, res) {
 	req.models.book.get(parsedBody.id, function(error, Book) {
 		if(handleError(res, error)) return;
 		Book.title = parsedBody.title;
-		Book.price = parsedBody.author;
-		Book.price = parsedBody.language;
+		Book.author = parsedBody.author;
+		Book.language = parsedBody.language;
 		logger.debug("Book with id %s has been changed", Book.id);
 		Book.save(function(error) {
 			handleError(res, error);
@@ -59,7 +59,7 @@ router.post('/', function(req, res) {
 			req.models.page.get(page.id, function(error, Page) {
 				if(handleError(res, error)) return;
 				Page.number = page.number;
-				Page.price = page.text;
+				Page.text = page.text;
 				logger.debug("Page with id %s has been changed", Page.id);
 				Page.save(function(error) {
 					if(handleError(res, error)) return;
