@@ -1,11 +1,10 @@
-#TODO Better config here
 language: node_js
 node_js:
-	 - "5"
+  - "5"
 services: 
-	- postgresql
+  - postgresql
 env: 
-	- DB=postgresql
+  - DB=postgresql
 before_script:
-	- psql -c 'create database app;' -U postgres
-	- psql -c 'alter user "postgres" with password "password"' -U postgres
+  - psql -c 'create database app;' -U postgres
+  - psql -c 'alter user "postgres" with password "password"' -U postgres
