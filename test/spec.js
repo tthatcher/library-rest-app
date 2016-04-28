@@ -31,6 +31,13 @@ var validBody = (function() {
 
 describe('Book routes', function() {
 	
+	//This is really dumb, but the database isn't created when the tests start
+	before(function(done) {
+		setTimeout(function() {
+			done();
+		},250);
+	});
+	
 	beforeEach(function(done) {
 		cleanupData(done);
 	});
