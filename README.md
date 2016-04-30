@@ -2,3 +2,24 @@
 [![Build Status](https://travis-ci.org/tthatcher/library-rest-app.svg?branch=master)](https://travis-ci.org/tthatcher/library-rest-app)
 
 Library REST webapp in node/express
+
+## Prerequisites
+Must have Node.js(5+) and Postgres installed
+
+## Installation
+```bash
+$ cd library-rest-app
+$ npm install
+```
+## Setup
+In library-rest-app/config/config.js, the server and database information is can be configured.
+
+## Running the server
+```bash
+$ npm start
+```
+
+## Running tests
+```bash
+$ npm test
+```
