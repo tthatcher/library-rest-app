@@ -2,6 +2,7 @@
 var orm = require('orm');
 var logger = require('./logger');
 var config = require('./config');
+var async = require('async');
 
 function connectionInfo(opts) {
 	var clone = Object.assign({}, opts);
@@ -14,16 +15,23 @@ function connectionInfo(opts) {
 //TODO Constraints/validations
 module.exports.connect = function(app) {
 	logger.info('Connecting with info', connectionInfo(config.postgres.conString));
-	app.use(orm.express(config.postgres.conString, {
-		define: function (db, models, next) {
-			db.load("../app/model/index", function (error) {
-				if(error) {
-					throw error;
+	async.waterfall([
+		function(callback) {
+			app.use(orm.express(config.postgres.conString, {
+				define: function (db, models) {
+					db.load("../app/model/index", function (err) {		
+						if(!err) Object.keys(db.models).forEach(x => models[x] = db.models[x]);
+						callback(err, db);
+					});
 				}
-				Object.keys(db.models).forEach(x => models[x] = db.models[x]);
-				db.sync();
+			}));
+		},
+		function(db, callback) {
+			db.sync(function(err) {
+				callback(err);
 			});
-			next();
 		}
-	}));
+	], function(err) {
+		if(err) throw err;
+	});
 };
