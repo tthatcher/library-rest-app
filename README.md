@@ -4,7 +4,7 @@
 Library REST webapp in node/express
 
 ## Prerequisites
-Must have Node.js(5+) and Postgres installed
+Must have Node.js and Postgres installed
 
 ## Installation
 ```bash
