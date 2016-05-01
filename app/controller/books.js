@@ -6,14 +6,18 @@ var logger = require('../../config/logger');
 var v = require('../validator/validator').validator;
 
 router.get('/', function(req, res) {
-	//TODO Should return pages
-	req.models.book.find({}, function(err, books) { 
+	async.waterfall([
+		function(callback) {
+			req.models.book.find({}, { autoFetch: true }, function(err, books) {
+				callback(err, books);
+			});
+		}
+	], function(err, books) {
 		if(err) {
-			logger.info('There was an error with this request ', error);
-			res.status(500).json({error:"There was a problem processing your request"});
+			logger.info('There was an issue with this request', err);
+			sendError(res);
 		} else {
-			logger.debug('Returning books', books);
-			res.status(200).json(books);
+			res.json(books);
 		}
 	});
 });
@@ -76,7 +80,7 @@ router.post('/', function(req, res) {
 		},
 		function(callback) {
 			if(parsedBody.pages) {
-				async.each(parsedBody.pages, updatePage, function(err) {
+				async.each(parsedBody.pages, updatePage(req), function(err) {
 					callback(err);
 				});
 			} else {
@@ -84,11 +88,26 @@ router.post('/', function(req, res) {
 			}
 		}
 	], function(err){
-		determineSuccess(err, res);
+		determineSuccess(err, res)
 	});
-	
-	
 });
+
+function updatePage(req) {
+	return function(page, callback) {
+		req.models.page.get(page.id, function(err, Page) {
+			if(err) {
+				callback(err);
+			} else {
+				Page.number = page.number;
+				Page.text = page.text;
+				logger.debug("Page with id %s has been changed", Page.id);
+				Page.save(function(err) {
+					callback(err);
+				});
+			}
+		});
+	}
+}
 
 router.delete('/', function(req, res) {
 	var parsedBody = req.body;
@@ -107,21 +126,6 @@ router.delete('/', function(req, res) {
 		determineSuccess(err, res);
 	});
 });
-
-function updatePage(page, callback) {
-	req.models.page.get(page.id, function(err, Page) {
-		if(err) {
-			callback(err, Page);
-		} else {
-			Page.number = page.number;
-			Page.text = page.text;
-			logger.debug("Page with id %s has been changed", Page.id);
-			Page.save(function(err) {
-				callback(err, Page);
-			});
-		}
-	});
-}
 
 function validateBodyMatchesIdSchema(res, json) {
 	var empty = validateBodyIsNotEmpty(res, json);

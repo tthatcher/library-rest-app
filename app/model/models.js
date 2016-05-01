@@ -4,12 +4,12 @@ module.exports = function (db, cb) {
 		title : String,
 		author: String,
 		language: String
-	});
+	},  {cache: false});
 	
 	var Page = db.define('page', {
 		text: String,
 		number: Number
-	});
+	}, {cache: false});
 	
 	Book.hasMany("pages", Page);
 	

@@ -6,14 +6,14 @@ var pg = require('pg');
 var config = require('../config/config');
 
 //TODO .expect('Content-Type', /json/) not working
-//TODO Update get to return pages
-//TODO Update test cases for that
+//TODO Verify error codes (and move them somewhere common)
+//TODO Reorganize this, it's hard to read
+//TODO Max length tests for fields
 
 function cleanupData(done) {
 	var client = new pg.Client(config.postgres.conString);
 	client.connect(function(err) {
 	  if(err) throw err;
-	  
 	  client.query('truncate table book; truncate table page; truncate table book_pages;', function(err, result) {
 		if(err) throw err;
 		client.end();
@@ -35,12 +35,14 @@ describe('Book routes', function() {
 	before(function(done) {
 		setTimeout(function() {
 			done();
-		},250);
+		}, 250);
 	});
 	
 	beforeEach(function(done) {
 		cleanupData(done);
 	});
+	
+	//TODO Write test that verifies inserting two books returns two books
 	
 	//GET
 	describe('GET books - ', function() {
@@ -67,17 +69,26 @@ describe('Book routes', function() {
 		it('Successful PUT can be accessed through GET', function(done) {
 			request.put('/api/v1/books')
 				.send(validBody)
+				.expect(200)
 				.end(function(err, res) {
 					if (err) throw err;
-					
 					request.get('/api/v1/books')
 						.set('Accept', 'application/json')
 						.expect(function(res) {
-							var body = res.body[0];
-							body.title = validBody.title;
-							body.author = validBody.author;
-							body.language = validBody.language;
-						  })
+								var book = res.body[0];
+								var page1 = book.pages[0];
+								var page2 = book.pages[1];
+								expect(book.id).to.be.a('number');
+								expect(book.title).to.equal(validBody.title);
+								expect(book.language).to.equal(validBody.language);
+								expect(book.author).to.equal(validBody.author);
+								expect(page1.id).to.be.a('number');
+								expect(page1.number).to.equal(validBody.pages[0].number);
+								expect(page1.text).to.equal(validBody.pages[0].text);
+								expect(page2.id).to.be.a('number');
+								expect(page2.text).to.equal(validBody.pages[1].text);
+								expect(page2.number).to.equal(validBody.pages[1].number);
+							})
 						.expect(200, done);
 				  });
 		});
@@ -123,25 +134,37 @@ describe('Book routes', function() {
 						.end(function(err, res) {
 							if (err) throw err;
 							
-							var expected = {};
-							expected.title = 'My Book 2';
-							expected.author = 'Dog';
-							expected.language = 'JP';
-							expected.id = res.body[0].id;
+							var expectedBook = {};
+							expectedBook.title = 'My Book 2';
+							expectedBook.author = 'Dog';
+							expectedBook.language = 'JP';
+							expectedBook.id = res.body[0].id;
+							var expectedPage1 = {};
+							expectedPage1.text = 'New text 1';
+							expectedPage1.number = 5;
+							expectedPage1.id = res.body[0].pages[0].id;
+							var expectedPage2 = {};
+							expectedPage2.text = 'New text 2';
+							expectedPage2.number = 100;
+							expectedPage2.id = res.body[0].pages[1].id;
+							expectedBook.pages = [expectedPage1, expectedPage2];
 							request.post('/api/v1/books')
-								.send(expected)
+								.send(expectedBook)
 								.set('Accept', 'application/json')
 								.expect(200)
 								.end(function(err, res) {
 									if (err) throw err;
-
 									request.get('/api/v1/books')
 										.set('Accept', 'application/json')
+										.expect(function(res) {
+											console.log(res.body[0].pages[0].text);
+										})
 										.expect([{
-											title : expected.title,
-											author : expected.author,
-											language: expected.language,
-											id : expected.id
+											title : expectedBook.title,
+											author : expectedBook.author,
+											language: expectedBook.language,
+											id : expectedBook.id,
+											pages : [expectedPage1, expectedPage2]
 										  }])
 										.expect(200, done);
 								});

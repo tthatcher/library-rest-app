@@ -4,7 +4,7 @@ config.app = {};
 config.postgres = {};
 config.app.port = 8081;
 config.app.logname='app.log';
-config.app.loggingLevel='info';
+config.app.loggingLevel='debug';
 
 var opts = {
 	host:     'localhost',
