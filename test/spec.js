@@ -3,6 +3,7 @@ var expect = require('chai').expect;
 var app = require('../server');
 var request = require('supertest')(app);
 var pg = require('pg');
+var async = require('async');
 var config = require('../config/config');
 
 //TODO .expect('Content-Type', /json/) not working
@@ -28,6 +29,29 @@ var validBody = (function() {
 	return body;
 })();
 
+function addValidBook(callback) {
+	request.put('/api/v1/books')
+	.send(validBody)
+	.expect(200)
+	.end(function(err, res) {
+		callback(err, res);
+	});
+}
+
+function responseMatchesValidBody(book) {
+	var page1 = book.pages[0];
+	var page2 = book.pages[1];
+	expect(book.id).to.be.a('number');
+	expect(book.title).to.equal(validBody.title);
+	expect(book.language).to.equal(validBody.language);
+	expect(book.author).to.equal(validBody.author);
+	expect(page1.id).to.be.a('number');
+	expect(page1.number).to.equal(validBody.pages[0].number);
+	expect(page1.text).to.equal(validBody.pages[0].text);
+	expect(page2.id).to.be.a('number');
+	expect(page2.text).to.equal(validBody.pages[1].text);
+	expect(page2.number).to.equal(validBody.pages[1].number);
+}
 
 describe('Book routes', function() {
 	
@@ -46,12 +70,40 @@ describe('Book routes', function() {
 	
 	//GET
 	describe('GET books - ', function() {
-		it('Should fetch empty body', function(done) {
+		it('GET with empty table Should fetch empty body', function(done) {
 			request.get('/api/v1/books')
 				.send()
 				.expect('Content-Type', /json/)
 				.expect('[]')
 				.expect(200, done);
+		});
+		
+		it('GET with two books should fetch two books', function(done) {
+			async.series([
+				function(callback) {
+					addValidBook(function(err, res) {
+						callback(err, res);
+					});
+				},
+				function(callback) {
+					addValidBook(function(err, res) {
+						callback(err, res);
+					});
+				},
+				function(callback) {
+				request.get('/api/v1/books')
+					.send()
+					.expect('Content-Type', /json/)
+					.expect(function(res) {
+						var books = res.body;
+						expect(books).to.have.length.of(2);
+						books.forEach(function(book) {
+							responseMatchesValidBody(book);
+						});
+					})
+					.expect(200, done);
+				}
+			]);
 		});
 	});
 	
@@ -76,18 +128,7 @@ describe('Book routes', function() {
 						.set('Accept', 'application/json')
 						.expect(function(res) {
 								var book = res.body[0];
-								var page1 = book.pages[0];
-								var page2 = book.pages[1];
-								expect(book.id).to.be.a('number');
-								expect(book.title).to.equal(validBody.title);
-								expect(book.language).to.equal(validBody.language);
-								expect(book.author).to.equal(validBody.author);
-								expect(page1.id).to.be.a('number');
-								expect(page1.number).to.equal(validBody.pages[0].number);
-								expect(page1.text).to.equal(validBody.pages[0].text);
-								expect(page2.id).to.be.a('number');
-								expect(page2.text).to.equal(validBody.pages[1].text);
-								expect(page2.number).to.equal(validBody.pages[1].number);
+								responseMatchesValidBody(book);
 							})
 						.expect(200, done);
 				  });
@@ -156,9 +197,6 @@ describe('Book routes', function() {
 									if (err) throw err;
 									request.get('/api/v1/books')
 										.set('Accept', 'application/json')
-										.expect(function(res) {
-											console.log(res.body[0].pages[0].text);
-										})
 										.expect([{
 											title : expectedBook.title,
 											author : expectedBook.author,
@@ -219,7 +257,7 @@ describe('Book routes', function() {
 				.expect(500, done);
 		});
 	
-		it('Should DELETE book with no error message', function(done) {						
+		it('Should DELETE book with no error message and actually delete', function(done) {						
 			request.put('/api/v1/books')
 				.send(validBody)
 				.expect(200)
@@ -233,7 +271,12 @@ describe('Book routes', function() {
 							.send({id:res.body[0].id})
 							.set('Accept', 'application/json')
 							.expect(JSON.stringify({success : "success"}))
-							.expect(200, done);
+							.expect(200)
+							.end(function(err, res) {
+								request.get('/api/v1/books')
+								.expect(200)
+								.expect([], done)
+							});
 					});
 				});
 		});
