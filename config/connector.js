@@ -14,7 +14,7 @@ function connectionInfo(opts) {
 //TODO Move off of orm
 //TODO Constraints/validations
 module.exports.connect = function(app) {
-	logger.info('Connecting with info', connectionInfo(config.postgres.conString));
+	logger.info('Connecting with info', connectionInfo(config.postgres.opts));
 	async.waterfall([
 		function(callback) {
 			app.use(orm.express(config.postgres.conString, {
