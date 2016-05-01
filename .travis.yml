@@ -1,9 +1,13 @@
 language: node_js
 node_js:
-  - "5"
-services: 
-  - postgresql
-env: 
-  - DB=postgresql
+- '5'
+services:
+- postgresql
+env:
+- DB=postgresql
 before_script:
-  - psql -c 'create database app;' -U postgres
+- psql -c 'create database app;' -U postgres
+deploy:
+  api_key:
+    provider: heroku
+    secure: ACDA2kp7mxqGfNXtkH74DATnuDvJNjhXbju1PWfNiqZOi3xGRswaQXZo0DpUO5xtiKGS6CrXRJj8CXy1UJJiG5gty/qKdKOK6s2LWvAImEkmXKSNXGYua178sI/cMFaP5Sp2MFa5sYv7MbnZgYFo2Ga48iJJUGBbdahhlFA68Zdh4clE5E3uRWg2uPXHCcLEZ/OfjPY3P/vwy+zZ8FZoGeBouSUfvqhhWUwD840nBw//3kIhoiTIJznTDCv51ksLWzQxpfL9e0BWhtF7jac2j4JJN4wHxFXLcRFZbsUXyLVOW77A/JeQJxSi9mO5EEaYKnauBQJMIv4ZE8cyyzy5fuFiNMXBpH1FOKudY1tCbqai/GxrCokmrePUroM6qnpQs041uN+ymuIt1VfL7JxqbSaj0zIdAsyBY8Efq80OpCwZnvpYgU9Jf8MA19b1SPuSroIz3aIZreqSTlsgTa46LdAWAtebo1LBA8Yz/QUasaZTceNb+q7QRfuutcQutoG4s1DScXaxGstKo0CLwflAk7PDyVkWcetZgxIjTZype6Wx/DE6NYnUiC7x+8LyxPYgYCXDha/DmBOk7WIKL6fCmaEiNpWp0eUFoyT6h4OXGc8g7FsLjeLYheiQNBVoVAriWy/pangvjl3gttZ9D0lJ60z2jLs0gJKet1MmJa7xJIk=
