@@ -20,7 +20,9 @@ module.exports.connect = function(app) {
 			app.use(orm.express(config.postgres.conString, {
 				define: function (db, models) {
 					db.load("../app/model/index", function (err) {		
-						if(!err) Object.keys(db.models).forEach(x => models[x] = db.models[x]);
+						if(!err) {
+							Object.keys(db.models).forEach(x => models[x] = db.models[x]);
+						}
 						callback(err, db);
 					});
 				}
