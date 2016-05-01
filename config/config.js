@@ -2,7 +2,7 @@
 var config = {};
 config.app = {};
 config.postgres = {};
-config.app.port = 8081;
+config.app.port = process.env.PORT || 8081;
 config.app.logname='app.log';
 config.app.loggingLevel='debug';
 
