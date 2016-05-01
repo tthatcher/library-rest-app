@@ -15,9 +15,8 @@ var opts = {
 	password: ''
 };
 
-var conString = "postgres://"+opts.user+":"+opts.password+"@"+opts.host+"/"+opts.database;
+var conString = process.env.DATABASE_URL ? process.env.DATABASE_URL : "postgres://"+opts.user+":"+opts.password+"@"+opts.host+"/"+opts.database;
 
-config.postgres.opts = opts;
 config.postgres.conString = conString;
 
 module.exports = config;

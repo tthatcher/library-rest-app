@@ -66,7 +66,7 @@ function responseMatchesValidBody(book) {
 
 describe('Book routes', function() {
 	
-	//This is really dumb, but the database isn't created when the tests start
+	//This is really dumb, but the schema isn't created when the tests start
 	before(function(done) {
 		setTimeout(function() {
 			done();

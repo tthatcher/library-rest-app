@@ -4,17 +4,11 @@ var logger = require('./logger');
 var config = require('./config');
 var async = require('async');
 
-function connectionInfo(opts) {
-	var clone = Object.assign({}, opts);
-	clone.password = '***';
-	return clone;
-}
-
 //TODO Add indexes
 //TODO Move off of orm
 //TODO Constraints/validations
 module.exports.connect = function(app) {
-	logger.info('Connecting with info', connectionInfo(config.postgres.opts));
+	logger.info('Connecting with info', config.postgres.conString);
 	async.waterfall([
 		function(callback) {
 			app.use(orm.express(config.postgres.conString, {
