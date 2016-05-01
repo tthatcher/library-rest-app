@@ -8,16 +8,16 @@ var v = require('../validator/validator').validator;
 router.get('/', function(req, res) {
 	async.waterfall([
 		function(callback) {
-			req.models.book.find({}, { autoFetch: true }, function(err, books) {
-				callback(err, books);
+			req.models.book.find({}, { autoFetch: true }, function(err, Books) {
+				callback(err, Books);
 			});
 		}
-	], function(err, books) {
+	], function(err, Books) {
 		if(err) {
 			logger.info('There was an issue with this request', err);
 			sendError(res);
 		} else {
-			res.json(books);
+			res.json(Books);
 		}
 	});
 });
@@ -30,24 +30,24 @@ router.put('/', function(req, res) {
 			callback(validateBodyMatchesBookSchema(res, parsedBody));
 		},
 		function(callback) {
-			req.models.book.create({title: parsedBody.title, author: parsedBody.author, language: parsedBody.language}, function(err, book) {
-				if(!err) logger.debug("Book with id %s has been added", book.id);
-				callback(err, book);
+			req.models.book.create({title: parsedBody.title, author: parsedBody.author, language: parsedBody.language}, function(err, Book) {
+				if(!err) logger.debug("Book with id %s has been added", Book.id);
+				callback(err, Book);
 			});
 		},
-		function(book, callback) { 
+		function(Book, callback) { 
 			if(parsedBody.pages) {
-				req.models.page.create(parsedBody.pages, function(err, pages) {
-					if(!err) pages.forEach(x => logger.debug('Page with id %s has been added', x.id));
-					callback(err, book, pages);
+				req.models.page.create(parsedBody.pages, function(err, Pages) {
+					if(!err) Pages.forEach(x => logger.debug('Page with id %s has been added', x.id));
+					callback(err, Book, Pages);
 				});
 			} else {
-				callback(null, book, null);
+				callback(null, Book, null);
 			}
 			
 		},
-		function(book, pages, callback) {
-			book.setPages(pages, function(err) {
+		function(Book, Pages, callback) {
+			Book.setPages(Pages, function(err) {
 				logger.debug('Pages have been set');
 				callback(err);
 			});
@@ -117,25 +117,25 @@ router.delete('/', function(req, res) {
 			callback(validateBodyMatchesIdSchema(res, parsedBody));
 		},
 		function(callback) {
-			req.models.book.find({id : parsedBody.id}, { autoFetch: true }, function(err, books) {
-				if(!err) logger.info('Book with id %s was found.', books[0].id);
-				callback(err, books[0]);
+			req.models.book.find({id : parsedBody.id}, { autoFetch: true }, function(err, Books) {
+				if(!err) logger.info('Book with id %s was found.', Books[0].id);
+				callback(err, Books[0]);
 			});
 		},
-		function(book, callback) {
-			book.removePages(function(err){
-				if(!err) logger.info('Relations for book with id %s were removed.', book.id);
-				callback(err, book);
+		function(Book, callback) {
+			Book.removePages(function(err){
+				if(!err) logger.info('Relations for book with id %s were removed.', Book.id);
+				callback(err, Book);
 			});
 		},
-		function(book, callback) {
-			async.each(book.pages, removePage, function(err) {
-				callback(err, book);
+		function(Book, callback) {
+			async.each(Book.pages, removePage, function(err) {
+				callback(err, Book);
 			});
 		},
-		function(book, callback) {
-			book.remove(function(err) {
-				if(!err) logger.info('Book with id %s was removed.', book.id);
+		function(Book, callback) {
+			Book.remove(function(err) {
+				if(!err) logger.info('Book with id %s was removed.', Book.id);
 				callback(err);
 			});
 		}
