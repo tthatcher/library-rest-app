@@ -16,21 +16,21 @@ function cleanupData(done) {
 		'truncate table book; truncate table page; truncate table book_pages;');
 }
 
-function doesNotHavePages(cb) {
+function doesNotHavePages(callback) {
 	executeQuery(function(result) {
-		cb(!result.rows[0]);
-	}, 'select exists(select 1 from page) as "exists";');
+		callback(result.rows[0].exists);
+	}, 'select (not exists(select 1 from page) and not exists(select 1 from book_pages)) as "exists";');
 }
 
-function executeQuery(cb, query) {
+function executeQuery(callback, query) {
 	var client = new pg.Client(config.postgres.conString);
 	client.connect(function(err) {
-	  if(err) throw err;
-	  client.query(query, function(err, result) {
 		if(err) throw err;
-		client.end();
-		cb(result);
-	  });
+		client.query(query, function(err, result) {
+			if(err) throw err;
+			client.end();
+			callback(result);
+		});
 	});
 }
 

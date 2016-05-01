@@ -109,16 +109,33 @@ function updatePage(req) {
 	}
 }
 
+//TODO Cascade delete with constraints
 router.delete('/', function(req, res) {
 	var parsedBody = req.body;
-	
 	async.waterfall([
 		function(callback) {
 			callback(validateBodyMatchesIdSchema(res, parsedBody));
 		},
 		function(callback) {
-			req.models.book.find(parsedBody.id).remove(function(err) {
-				if(!err) logger.info('Book with id ' + parsedBody.id + ' was removed');
+			req.models.book.find({id : parsedBody.id}, { autoFetch: true }, function(err, books) {
+				if(!err) logger.info('Book with id %s was found.', books[0].id);
+				callback(err, books[0]);
+			});
+		},
+		function(book, callback) {
+			book.removePages(function(err){
+				if(!err) logger.info('Relations for book with id %s were removed.', book.id);
+				callback(err, book);
+			});
+		},
+		function(book, callback) {
+			async.each(book.pages, removePage, function(err) {
+				callback(err, book);
+			});
+		},
+		function(book, callback) {
+			book.remove(function(err) {
+				if(!err) logger.info('Book with id %s was removed.', book.id);
 				callback(err);
 			});
 		}
@@ -126,6 +143,13 @@ router.delete('/', function(req, res) {
 		determineSuccess(err, res);
 	});
 });
+
+function removePage(page, callback) {
+	page.remove(function(err) {
+		if(!err) logger.info('Page with id %s was removed.', page.id);
+		callback();
+	});
+}
 
 function validateBodyMatchesIdSchema(res, json) {
 	var empty = validateBodyIsNotEmpty(res, json);
