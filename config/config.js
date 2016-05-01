@@ -12,7 +12,7 @@ var opts = {
 	protocol: 'postgres',
 	port:     5432,
 	user: 'postgres',
-	password: 'password'
+	password: ''
 };
 
 var conString = "postgres://"+opts.user+":"+opts.password+"@"+opts.host+"/"+opts.database;
