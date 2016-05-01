@@ -12,13 +12,24 @@ var config = require('../config/config');
 //TODO Max length tests for fields
 
 function cleanupData(done) {
+	executeQuery(() => done(), 
+		'truncate table book; truncate table page; truncate table book_pages;');
+}
+
+function doesNotHavePages(cb) {
+	executeQuery(function(result) {
+		cb(!result.rows[0]);
+	}, 'select exists(select 1 from page) as "exists";');
+}
+
+function executeQuery(cb, query) {
 	var client = new pg.Client(config.postgres.conString);
 	client.connect(function(err) {
 	  if(err) throw err;
-	  client.query('truncate table book; truncate table page; truncate table book_pages;', function(err, result) {
+	  client.query(query, function(err, result) {
 		if(err) throw err;
 		client.end();
-		done();
+		cb(result);
 	  });
 	});
 }
@@ -257,27 +268,33 @@ describe('Book routes', function() {
 				.expect(500, done);
 		});
 	
-		it('Should DELETE book with no error message and actually delete', function(done) {						
+		it('Valid DELETE deletes book and returns success', function(done) {						
 			request.put('/api/v1/books')
 				.send(validBody)
 				.expect(200)
 				.end(function(err, res) {
 					if (err) throw err;
-					
 					request.get('/api/v1/books')
-					.expect(200)
-					.end(function(err, res) {
-						request.delete('/api/v1/books')
-							.send({id:res.body[0].id})
-							.set('Accept', 'application/json')
-							.expect(JSON.stringify({success : "success"}))
-							.expect(200)
-							.end(function(err, res) {
-								request.get('/api/v1/books')
+						.expect(200)
+						.end(function(err, res) {
+							if(err) throw err;
+							request.delete('/api/v1/books')
+								.send({id:res.body[0].id})
+								.set('Accept', 'application/json')
+								.expect(JSON.stringify({success : "success"}))
 								.expect(200)
-								.expect([], done)
-							});
-					});
+								.end(function(err, res) {
+									if(err) throw err;
+									request.get('/api/v1/books')
+										.expect([])
+										.expect(200);
+									//Assert that all of the pages have been cascade deleted
+									doesNotHavePages(function(result) {
+										expect(result).to.be.true;
+										done();
+									});
+								});
+						});
 				});
 		});
 		
