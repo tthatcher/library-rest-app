@@ -16,7 +16,7 @@ connector.connect(app);
 app.use('/api/v1/books', require('./app/controller/books'));
 
 var port = config.app.port;
-app.listen(port, function() {
+app.listen(port, function () {
 	logger.info('Server has started at port %s', port);
 });
 module.exports = app;
