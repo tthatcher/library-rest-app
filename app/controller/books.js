@@ -117,7 +117,6 @@ function updatePage(req) {
 	}
 }
 
-//TODO Cascade delete with constraints
 router.delete ('/', function (req, res) {
 	var parsedBody = req.body;
 	async.waterfall([
