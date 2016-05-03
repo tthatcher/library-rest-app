@@ -64,7 +64,6 @@ var idSchema = {
 	}
 };
 
-//TODO Switch to tv4
 var Validator = require('jsonschema').Validator;
 var validator = new Validator();
 var reqIdValidator = new Validator();

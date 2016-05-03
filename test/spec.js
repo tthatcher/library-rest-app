@@ -6,11 +6,6 @@ var pg = require('pg');
 var async = require('async');
 var config = require('../config/config');
 
-//TODO .expect('Content-Type', /json/) not working
-//TODO Verify error codes (and move them somewhere common)
-//TODO Reorganize this, it's hard to read
-//TODO Max length tests for fields
-
 function cleanupData(done) {
 	executeQuery(() => done(),
 		'truncate table book; truncate table page; truncate table book_pages;');

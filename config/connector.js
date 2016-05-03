@@ -4,9 +4,6 @@ var logger = require('./logger');
 var config = require('./config');
 var async = require('async');
 
-//TODO Add indexes
-//TODO Move off of orm
-//TODO Constraints/validations
 module.exports.connect = function (app) {
 	logger.info('Connecting with info', config.postgres.conString);
 	async.waterfall([
