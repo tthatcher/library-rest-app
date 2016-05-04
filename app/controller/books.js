@@ -179,7 +179,7 @@ function validateBodyMatchesIdSchema(res, json) {
 function validateBodyIsNotEmpty(res, json) {
 	if (!json) {
 		logger.info("Request body was empty");
-		return "Request body was empty";
+		return new Error("Request body was empty");
 	}
 }
 
@@ -196,7 +196,7 @@ function validateBodyMatchesBookSchema(res, json, isIdRequired) {
 function validateBodyMatchesSchema(res, result) {
 	if (!result.valid) {
 		logger.info("Invalid schema, error ", result.errors);
-		return "Invalid schema";
+		return new Error("Invalid schema");
 	}
 }
 
