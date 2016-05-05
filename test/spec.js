@@ -5,6 +5,9 @@ var request = require('supertest')(app);
 var pg = require('pg');
 var async = require('async');
 var config = require('../config/config');
+var messages = require('../app/util/controllerUtil').messages;
+var success = JSON.stringify(messages.success());
+var error = JSON.stringify(messages.error());
 
 function cleanupData(done) {
 	executeQuery(() => done(),
@@ -53,6 +56,7 @@ function addValidBook(callback) {
 	request.put('/api/v1/books')
 	.send(validBody)
 	.expect(200)
+	.expect(success)
 	.end(function (err, res) {
 		callback(err, res);
 	});
@@ -132,9 +136,7 @@ describe('Book routes', function () {
 			request.put('/api/v1/books')
 			.send(validBody)
 			.set('Accept', 'application/json')
-			.expect(JSON.stringify({
-					success : "success"
-				}))
+			.expect(success)
 			.expect(200, done);
 		});
 
@@ -142,6 +144,7 @@ describe('Book routes', function () {
 			request.put('/api/v1/books')
 			.send(validBody)
 			.expect(200)
+			.expect(success)
 			.end(function (err, res) {
 				if (err)
 					throw err;
@@ -172,6 +175,7 @@ describe('Book routes', function () {
 			request.put('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -192,6 +196,7 @@ describe('Book routes', function () {
 			request.put('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 	});
@@ -203,12 +208,15 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send({})
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
 		it('Should POST book with no error message', function (done) {
 			request.put('/api/v1/books')
 			.send(validBody)
+			.expect(success)
+			.expect(200)
 			.end(function (err, res) {
 				if (err)
 					throw err;
@@ -238,6 +246,7 @@ describe('Book routes', function () {
 					.send(expectedBook)
 					.set('Accept', 'application/json')
 					.expect(200)
+					.expect(success)
 					.end(function (err, res) {
 						if (err)
 							throw err;
@@ -277,6 +286,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -300,6 +310,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -322,6 +333,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -345,6 +357,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 	});
@@ -356,6 +369,7 @@ describe('Book routes', function () {
 			request.delete ('/api/v1/books')
 			.send({})
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -363,6 +377,7 @@ describe('Book routes', function () {
 			request.put('/api/v1/books')
 			.send(validBody)
 			.expect(200)
+			.expect(success)
 			.end(function (err, res) {
 				if (err)
 					throw err;
@@ -376,10 +391,9 @@ describe('Book routes', function () {
 						id : res.body[0].id
 					})
 					.set('Accept', 'application/json')
-					.expect(JSON.stringify({
-							success : "success"
-						}))
+					.expect(success)
 					.expect(200)
+					.expect(success)
 					.end(function (err, res) {
 						if (err)
 							throw err;
@@ -403,6 +417,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 
@@ -413,6 +428,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
+			.expect(error)
 			.expect(500, done);
 		});
 	});

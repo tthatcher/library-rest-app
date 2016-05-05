@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var async = require('async');
 var logger = require('../../config/logger');
+var messages = require('../util/controllerUtil').messages;
 var v = require('../validator/validator').validator;
 
 router.get('/', function (req, res) {
@@ -201,15 +202,11 @@ function validateBodyMatchesSchema(res, result) {
 }
 
 function success(res) {
-	res.status(200).json({
-		success : "success"
-	});
+	res.status(200).json(messages.success());
 }
 
 function sendError(res) {
-	res.status(500).json({
-		error : "There was a problem processing your request"
-	});
+	res.status(500).json(messages.error());
 }
 
 function determineSuccess(err, res) {
