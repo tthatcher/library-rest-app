@@ -84,6 +84,7 @@ router.post('/', function (req, res) {
 			},
 			function (Book, callback) {
 				Book.save(function (err) {
+					logger.debug("Book with id %s has been saved", Book.id);
 					callback(err);
 				});
 			},
@@ -111,6 +112,7 @@ function updatePage(req) {
 				Page.text = page.text;
 				logger.debug("Page with id %s has been changed", Page.id);
 				Page.save(function (err) {
+				    logger.debug("Page with id %s has been saved", Page.id);
 					callback(err);
 				});
 			}
