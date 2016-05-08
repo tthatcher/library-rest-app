@@ -10,6 +10,7 @@ var pageSchema = function (isIdRequired) {
 			},
 			"number" : {
 				"number" : "integer",
+				"minimum": 1,
 				required : true
 			},
 			"id" : {
