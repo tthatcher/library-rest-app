@@ -53,8 +53,12 @@ var validBody = (function () {
 })();
 
 function addValidBook(callback) {
+	addBook(validBody, callback);
+}
+
+function addBook(body, callback) {
 	request.put('/api/v1/books')
-	.send(validBody)
+	.send(body)
 	.expect(200)
 	.expect(success)
 	.end(function (err, res) {
@@ -198,6 +202,29 @@ describe('Book routes', function () {
 			.set('Accept', 'application/json')
 			.expect(error)
 			.expect(500, done);
+		});
+		
+		it('PUT with invalid page number results in failure', function (done) {
+			var pages = [{
+					number : -1,
+					text : 'This is page -1'
+				}, {
+					number : 2,
+					text : 'This is page 2'
+				}
+			];
+			var body = {
+				title : 'My Book',
+				language : 'EN',
+				author : 'Travis',
+				pages : pages
+			};
+			addValidBook(function (err, res) {
+				request.put('/api/v1/books')
+				.send(body)
+				.expect(error)
+				.expect(500, done);
+			});
 		});
 	});
 
@@ -359,6 +386,33 @@ describe('Book routes', function () {
 			.set('Accept', 'application/json')
 			.expect(error)
 			.expect(500, done);
+		});
+		
+		it('POST with invalid page number results in failure', function (done) {
+			async.waterfall([
+					function (callback) {
+						addValidBook(function (err, res) {
+							callback(err);
+						});
+					},
+					function (callback) {
+						request.get('/api/v1/books')
+						.send()
+						.expect('Content-Type', /json/)
+						.expect(200)
+						.end(function(err, res) {
+							callback(err, res);
+						});
+					}
+				], function(err,res) {
+					var body = res.body[0];
+					body.pages[0].number = -1;
+					request.post('/api/v1/books')
+					.send(body)
+					.set('Accept', 'application/json')
+					.expect(error)
+					.expect(500, done);
+				});
 		});
 	});
 
