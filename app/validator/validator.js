@@ -6,7 +6,8 @@ var pageSchema = function (isIdRequired) {
 		"properties" : {
 			"text" : {
 				"text" : "string",
-				required : true
+				required : true,
+				"maxLength": 100000
 			},
 			"number" : {
 				"number" : "integer",
@@ -29,15 +30,18 @@ var bookSchema = function (isIdRequired) {
 		"properties" : {
 			"title" : {
 				"type" : "string",
-				"required" : true
+				"required" : true,
+				  "maxLength": 500
 			},
 			"author" : {
 				"type" : "string",
-				"required" : true
+				"required" : true,
+				"maxLength": 100
 			},
 			"language" : {
 				"type" : "string",
-				"required" : true
+				"required" : true,
+				"maxLength": 2
 			},
 			"pages" : {
 				"type" : "array",
