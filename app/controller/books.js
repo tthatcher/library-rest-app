@@ -56,10 +56,14 @@ router.put('/', function (req, res) {
 
 			},
 			function (Book, Pages, callback) {
-				Book.setPages(Pages, function (err) {
-					logger.debug('Pages have been set');
-					callback(err);
-				});
+				if (Pages) {
+					Book.setPages(Pages, function (err) {
+						logger.debug('Pages have been set');
+						callback(err);
+					});
+				} else {
+					callback(null);
+				}
 			}
 		], function (err) {
 		determineSuccess(err, res);
