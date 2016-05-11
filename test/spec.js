@@ -135,13 +135,25 @@ describe('Book routes', function () {
 
 	//PUT
 	describe('PUT books - ', function () {
-
-		it('PUT with valid schema results in success', function (done) {
+	
+		function expectPutResultsInError(body, done) {
 			request.put('/api/v1/books')
-			.send(validBody)
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(error)
+			.expect(500, done);
+		}
+		
+		function expectPutResultsInSuccess(body, done) {
+			request.put('/api/v1/books')
+			.send(body)
 			.set('Accept', 'application/json')
 			.expect(success)
 			.expect(200, done);
+		}
+
+		it('PUT with valid schema results in success', function (done) {
+			expectPutResultsInSuccess(validBody, done);
 		});
 
 		it('Successful PUT can be accessed through GET', function (done) {
@@ -176,11 +188,7 @@ describe('Book routes', function () {
 				language : 'EN',
 				pages : pages
 			};
-			request.put('/api/v1/books')
-			.send(body)
-			.set('Accept', 'application/json')
-			.expect(error)
-			.expect(500, done);
+			expectPutResultsInError(body, done);
 		});
 
 		it('PUT with invalid page schema should result in error', function (done) {
@@ -197,11 +205,7 @@ describe('Book routes', function () {
 				author : 'Travis',
 				pages : pages
 			};
-			request.put('/api/v1/books')
-			.send(body)
-			.set('Accept', 'application/json')
-			.expect(error)
-			.expect(500, done);
+			expectPutResultsInError(body, done);
 		});
 		
 		it('PUT with invalid page number results in failure', function (done) {
@@ -219,12 +223,28 @@ describe('Book routes', function () {
 				author : 'Travis',
 				pages : pages
 			};
-			addValidBook(function (err, res) {
-				request.put('/api/v1/books')
-				.send(body)
-				.expect(error)
-				.expect(500, done);
-			});
+			
+			expectPutResultsInError(body, done);
+		});
+		
+		it('PUT without pages does not result in error', function (done) {
+			var body = {title: 'My Book', author: 'An author', language:'EN'};
+			expectPutResultsInSuccess(body, done);
+		});
+		
+		it('PUT with author greater than 100 characters results in error', function (done) {
+			var body = {title: 'My Book', author: new Array(102).join('x'), language:'EN'};
+			expectPutResultsInError(body, done);
+		});
+		
+		it('PUT with title greater than 500 characters results in error', function (done) {
+			var body = {title: new Array(502).join('x'), author: 'Author', language:'EN'};
+			expectPutResultsInError(body, done);
+		});
+		
+		it('PUT with language with greater than 2 characters results in error', function (done) {
+			var body = {title: 'This is a title', author: 'Author', language:'ENG'};
+			expectPutResultsInError(body, done);
 		});
 		
 	});
@@ -415,6 +435,7 @@ describe('Book routes', function () {
 					.expect(500, done);
 				});
 		});
+		
 	});
 
 	//DELETE
