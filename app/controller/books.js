@@ -169,7 +169,7 @@ function removePage(page, callback) {
 	page.remove(function (err) {
 		if (!err)
 			logger.info('Page with id %s was removed.', page.id);
-		callback();
+		callback(err);
 	});
 }
 
