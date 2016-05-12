@@ -251,6 +251,16 @@ describe('Book routes', function () {
 			expectPutResultsInError(body, done);
 		});
 		
+		it('PUT with 500 character title does not result in error', function (done) {
+			var body = {title: stringWithLength(500), author: 'An author', language:'EN'};
+			expectPutResultsInSuccess(body, done);
+		});
+		
+		it('PUT with 100 character author does not result in error', function (done) {
+			var body = {title: 'A title', author: stringWithLength(100), language:'EN'};
+			expectPutResultsInSuccess(body, done);
+		});
+		
 	});
 
 	//POST
