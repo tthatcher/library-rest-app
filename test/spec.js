@@ -20,6 +20,10 @@ function doesNotHavePages(callback) {
 	}, 'select (not exists(select 1 from page) and not exists(select 1 from book_pages)) as "exists";');
 }
 
+function stringWithLength(len) {
+	return new Array(len+1).join('x');
+}
+
 function executeQuery(callback, query) {
 	var client = new pg.Client(config.postgres.conString);
 	client.connect(function (err) {
@@ -233,12 +237,12 @@ describe('Book routes', function () {
 		});
 		
 		it('PUT with author greater than 100 characters results in error', function (done) {
-			var body = {title: 'My Book', author: new Array(102).join('x'), language:'EN'};
+			var body = {title: 'My Book', author: stringWithLength(101), language:'EN'};
 			expectPutResultsInError(body, done);
 		});
 		
 		it('PUT with title greater than 500 characters results in error', function (done) {
-			var body = {title: new Array(502).join('x'), author: 'Author', language:'EN'};
+			var body = {title: stringWithLength(501), author: 'Author', language:'EN'};
 			expectPutResultsInError(body, done);
 		});
 		
