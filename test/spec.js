@@ -273,14 +273,6 @@ describe('Book routes', function () {
 			.expect(error)
 			.expect(500, done);
 		}
-		
-		function expectPostResultsInSuccess(body, done) {
-			request.post('/api/v1/books')
-			.send(body)
-			.set('Accept', 'application/json')
-			.expect(success)
-			.expect(200, done);
-		}
 
 		it('POST with empty request body results in error', function (done) {
 			request.post('/api/v1/books')
