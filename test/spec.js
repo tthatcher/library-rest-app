@@ -265,6 +265,22 @@ describe('Book routes', function () {
 
 	//POST
 	describe('POST books - ', function () {
+	
+		function expectPostResultsInError(body, done) {
+			request.post('/api/v1/books')
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(error)
+			.expect(500, done);
+		}
+		
+		function expectPostResultsInSuccess(body, done) {
+			request.post('/api/v1/books')
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(success)
+			.expect(200, done);
+		}
 
 		it('POST with empty request body results in error', function (done) {
 			request.post('/api/v1/books')
@@ -448,6 +464,21 @@ describe('Book routes', function () {
 					.expect(error)
 					.expect(500, done);
 				});
+		});
+		
+		it('POST with author greater than 100 characters results in error', function (done) {
+			var body = {title: 'My Book', author: stringWithLength(101), language:'EN'};
+			expectPostResultsInError(body, done);
+		});
+		
+		it('POST with title greater than 500 characters results in error', function (done) {
+			var body = {title: stringWithLength(501), author: 'Author', language:'EN'};
+			expectPostResultsInError(body, done);
+		});
+		
+		it('POST with language with greater than 2 characters results in error', function (done) {
+			var body = {title: 'This is a title', author: 'Author', language:'ENG'};
+			expectPostResultsInError(body, done);
 		});
 		
 	});
