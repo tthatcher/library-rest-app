@@ -30,7 +30,7 @@ router.put('/', function (req, res) {
 
 	async.waterfall([
 			function (callback) {
-				callback(validateBodyMatchesBookSchema(res, parsedBody));
+				validateBodyMatchesBookSchema(res, parsedBody, false, callback);
 			},
 			function (callback) {
 				req.models.book.create({
@@ -75,7 +75,7 @@ router.post('/', function (req, res) {
 
 	async.waterfall([
 			function (callback) {
-				callback(validateBodyMatchesBookSchema(res, parsedBody, true));
+				validateBodyMatchesBookSchema(res, parsedBody, true, callback);
 			},
 			function (callback) {
 				req.models.book.get(parsedBody.id, function (err, Book) {
@@ -128,7 +128,7 @@ router.delete ('/', function (req, res) {
 	var parsedBody = req.body;
 	async.waterfall([
 			function (callback) {
-				callback(validateBodyMatchesIdSchema(res, parsedBody));
+				validateBodyMatchesIdSchema(res, parsedBody, callback);
 			},
 			function (callback) {
 				req.models.book.find({
@@ -173,52 +173,58 @@ function removePage(page, callback) {
 	});
 }
 
-function validateBodyMatchesIdSchema(res, json) {
-	var empty = validateBodyIsNotEmpty(res, json);
-	if (empty)
-		return empty;
+function validateBodyMatchesIdSchema(res, json, callback) {
+	var err = validateBodyIsNotEmpty(res, json);
+	if (err) {
+	   return callback(err);
+	}
 	var result = v.id(json);
-	var valid = validateBodyMatchesSchema(res, result);
-	if (valid)
-		return valid;
+    err = validateBodyMatchesSchema(res, result);
+	if (err) {
+		return callback(err);
+	}
+	callback(null);
 }
 
 function validateBodyIsNotEmpty(res, json) {
-	if (!json) {
+	if (Object.keys(json).length === 0) {
 		logger.info("Request body was empty");
-		return new Error("Request body was empty");
+		return new Error(messages.error.emptyBody);
 	}
 }
 
-function validateBodyMatchesBookSchema(res, json, isIdRequired) {
-	var empty = validateBodyIsNotEmpty(res, json);
-	if (empty)
-		return empty;
+function validateBodyMatchesBookSchema(res, json, isIdRequired, callback) {
+	var err = validateBodyIsNotEmpty(res, json);
+	if (err) {
+	   return callback(err);
+	}
 	var result = v.book(json, isIdRequired);
-	var valid = validateBodyMatchesSchema(res, result);
-	if (valid)
-		return valid;
+	err = validateBodyMatchesSchema(res, result);
+	if (err) {
+		return callback(err);
+	}
+	callback(null);
 }
 
 function validateBodyMatchesSchema(res, result) {
 	if (!result.valid) {
 		logger.info("Invalid schema, error ", result.errors);
-		return new Error("Invalid schema");
+		return new Error(messages.error.invalidSchema);
 	}
 }
 
 function success(res) {
-	res.status(200).json(messages.success());
+	res.status(200).json({success: messages.success});
 }
 
-function sendError(res) {
-	res.status(500).json(messages.error());
+function sendError(err, res) {
+	res.status(500).json({error : err.message});
 }
 
 function determineSuccess(err, res) {
 	if (err) {
 		logger.info('There was an issue with this request', err);
-		sendError(res);
+		sendError(err, res);
 	} else {
 		success(res);
 	}

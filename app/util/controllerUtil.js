@@ -1,23 +1,15 @@
 "use strict";
 
-var success = function () {
-	return {
-		success : "success"
-	};
-}
-
-var error = function () {
-	return {
-		error : "There was a problem processing your request"
-	};
-}
-
 var exports = {};
 
 exports.messages = {};
 
-exports.messages.success = success;
+exports.messages.error = {};
 
-exports.messages.error = error;
+exports.messages.success = "success";
+
+exports.messages.error.emptyBody = "Your request could not be processed because it was empty.";
+
+exports.messages.error.invalidSchema = "Your request could not be processed due to invalid data.";
 
 module.exports = exports;

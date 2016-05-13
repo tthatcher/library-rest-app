@@ -6,8 +6,9 @@ var pg = require('pg');
 var async = require('async');
 var config = require('../config/config');
 var messages = require('../app/util/controllerUtil').messages;
-var success = JSON.stringify(messages.success());
-var error = JSON.stringify(messages.error());
+var success = JSON.stringify({success: messages.success});
+var emptyBodyError = JSON.stringify({error: messages.error.emptyBody});
+var invalidSchemaError = JSON.stringify({error: messages.error.invalidSchema});
 
 function cleanupData(done) {
 	executeQuery(() => done(),
@@ -140,11 +141,11 @@ describe('Book routes', function () {
 	//PUT
 	describe('PUT books - ', function () {
 	
-		function expectPutResultsInError(body, done) {
+		function expectPutResultsInInvalidSchemaError(body, done) {
 			request.put('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		}
 		
@@ -192,7 +193,7 @@ describe('Book routes', function () {
 				language : 'EN',
 				pages : pages
 			};
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
 		});
 
 		it('PUT with invalid page schema should result in error', function (done) {
@@ -209,7 +210,7 @@ describe('Book routes', function () {
 				author : 'Travis',
 				pages : pages
 			};
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('PUT with invalid page number results in failure', function (done) {
@@ -228,7 +229,15 @@ describe('Book routes', function () {
 				pages : pages
 			};
 			
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
+		});
+		
+		it('PUT with empty request body results in error', function (done) {
+			request.put('/api/v1/books')
+			.send({})
+			.set('Accept', 'application/json')
+			.expect(emptyBodyError)
+			.expect(500, done);
 		});
 		
 		it('PUT without pages does not result in error', function (done) {
@@ -238,17 +247,17 @@ describe('Book routes', function () {
 		
 		it('PUT with author greater than 100 characters results in error', function (done) {
 			var body = {title: 'My Book', author: stringWithLength(101), language:'EN'};
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('PUT with title greater than 500 characters results in error', function (done) {
 			var body = {title: stringWithLength(501), author: 'Author', language:'EN'};
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('PUT with language with greater than 2 characters results in error', function (done) {
 			var body = {title: 'This is a title', author: 'Author', language:'ENG'};
-			expectPutResultsInError(body, done);
+			expectPutResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('PUT with 500 character title does not result in error', function (done) {
@@ -266,11 +275,11 @@ describe('Book routes', function () {
 	//POST
 	describe('POST books - ', function () {
 	
-		function expectPostResultsInError(body, done) {
+		function expectPostResultsInInvalidSchemaError(body, done) {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		}
 
@@ -278,7 +287,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send({})
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(emptyBodyError)
 			.expect(500, done);
 		});
 
@@ -356,7 +365,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 
@@ -380,7 +389,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 
@@ -403,7 +412,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 
@@ -427,7 +436,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 		
@@ -453,24 +462,24 @@ describe('Book routes', function () {
 					request.post('/api/v1/books')
 					.send(body)
 					.set('Accept', 'application/json')
-					.expect(error)
+					.expect(invalidSchemaError)
 					.expect(500, done);
 				});
 		});
 		
 		it('POST with author greater than 100 characters results in error', function (done) {
 			var body = {title: 'My Book', author: stringWithLength(101), language:'EN'};
-			expectPostResultsInError(body, done);
+			expectPostResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('POST with title greater than 500 characters results in error', function (done) {
 			var body = {title: stringWithLength(501), author: 'Author', language:'EN'};
-			expectPostResultsInError(body, done);
+			expectPostResultsInInvalidSchemaError(body, done);
 		});
 		
 		it('POST with language with greater than 2 characters results in error', function (done) {
 			var body = {title: 'This is a title', author: 'Author', language:'ENG'};
-			expectPostResultsInError(body, done);
+			expectPostResultsInInvalidSchemaError(body, done);
 		});
 		
 	});
@@ -482,7 +491,7 @@ describe('Book routes', function () {
 			request.delete ('/api/v1/books')
 			.send({})
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(emptyBodyError)
 			.expect(500, done);
 		});
 
@@ -530,7 +539,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 
@@ -541,7 +550,7 @@ describe('Book routes', function () {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(error)
+			.expect(invalidSchemaError)
 			.expect(500, done);
 		});
 	});
