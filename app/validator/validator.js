@@ -16,6 +16,7 @@ var pageSchema = function (isIdRequired) {
 			},
 			"id" : {
 				"type" : "integer",
+				"minimum": 1,
 				required : isIdRequired
 			}
 		}
@@ -51,6 +52,7 @@ var bookSchema = function (isIdRequired) {
 			},
 			"id" : {
 				"type" : "integer",
+				"minimum": 1,
 				required : isIdRequired
 			}
 		}
@@ -64,7 +66,8 @@ var idSchema = {
 	"properties" : {
 		"id" : {
 			"type" : "integer",
-			"required" : true
+			"required" : true,
+			"minimum" : 1
 		}
 	}
 };

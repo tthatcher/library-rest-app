@@ -79,10 +79,12 @@ router.post('/', function (req, res) {
 			},
 			function (callback) {
 				req.models.book.get(parsedBody.id, function (err, Book) {
-					Book.title = parsedBody.title;
-					Book.author = parsedBody.author;
-					Book.language = parsedBody.language;
-					logger.debug("Book with id %s has been changed", Book.id);
+					if(!err) {
+						Book.title = parsedBody.title;
+						Book.author = parsedBody.author;
+						Book.language = parsedBody.language;
+						logger.debug("Book with id %s has been changed", Book.id);
+					}
 					callback(err, Book);
 				});
 			},
@@ -136,9 +138,14 @@ router.delete ('/', function (req, res) {
 				}, {
 					autoFetch : true
 				}, function (err, Books) {
-					if (!err)
+					if (!err && Books[0]) {
 						logger.info('Book with id %s was found.', Books[0].id);
-					callback(err, Books[0]);
+						callback(err, Books[0]);
+					} else {
+						err = err ? err : new Error("Not found");
+						callback(err, null);
+					}
+
 				});
 			},
 			function (Book, callback) {

@@ -9,6 +9,7 @@ var messages = require('../app/util/controllerUtil').messages;
 var success = JSON.stringify({success: messages.success});
 var emptyBodyError = JSON.stringify({error: messages.error.emptyBody});
 var invalidSchemaError = JSON.stringify({error: messages.error.invalidSchema});
+var notFoundError = JSON.stringify({error: 'Not found'});
 
 function cleanupData(done) {
 	executeQuery(() => done(),
@@ -275,12 +276,21 @@ describe('Book routes', function () {
 	//POST
 	describe('POST books - ', function () {
 	
+		function expectPostResultsInNotFoundError(body, done) {
+			expectPostResultsInError(body, done, notFoundError);
+		}
+	
 		function expectPostResultsInInvalidSchemaError(body, done) {
+			expectPostResultsInError(body, done, invalidSchemaError);
+		}
+		
+		function expectPostResultsInError(body, done, error) {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
-			.expect(invalidSchemaError)
+			.expect(error)
 			.expect(500, done);
+	
 		}
 
 		it('POST with empty request body results in error', function (done) {
@@ -482,6 +492,16 @@ describe('Book routes', function () {
 			expectPostResultsInInvalidSchemaError(body, done);
 		});
 		
+		it('POST with id that does not exist should result in error', function(done) {
+			var body = {
+				id : 1,
+				title : 'My Book',
+				language : 'EN',
+				author : 'Travis'
+			};
+			expectPostResultsInNotFoundError(body, done);	
+		});
+		
 	});
 
 	//DELETE
@@ -536,7 +556,7 @@ describe('Book routes', function () {
 			var body = {
 				id : -1
 			};
-			request.post('/api/v1/books')
+			request.delete('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
 			.expect(invalidSchemaError)
@@ -547,10 +567,21 @@ describe('Book routes', function () {
 			var body = {
 				id : "blah"
 			};
-			request.post('/api/v1/books')
+			request.delete('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
 			.expect(invalidSchemaError)
+			.expect(500, done);
+		});
+		
+		it('DELETE with id that does not exist should result in error', function(done) {
+			var body = {
+				id : 1,
+			};
+			request.delete('/api/v1/books')
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(notFoundError)
 			.expect(500, done);
 		});
 	});
