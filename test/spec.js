@@ -492,7 +492,7 @@ describe('Book routes', function () {
 			expectPostResultsInInvalidSchemaError(body, done);
 		});
 		
-		it('POST with id that does not exist should result in error', function(done) {
+		it('POST with book id that does not exist should result in error', function(done) {
 			var body = {
 				id : 1,
 				title : 'My Book',
@@ -501,6 +501,34 @@ describe('Book routes', function () {
 			};
 			expectPostResultsInNotFoundError(body, done);	
 		});
+		
+		it('POST with page id that does not exist should result in error', function(done) {
+			async.waterfall([
+					function (callback) {
+						addValidBook(function (err, res) {
+							callback(err);
+						});
+					},
+					function (callback) {
+						request.get('/api/v1/books')
+						.send()
+						.expect('Content-Type', /json/)
+						.expect(200)
+						.end(function(err, res) {
+							callback(err, res);
+						});
+					}
+				], function(err,res) {
+					var body = res.body[0];
+					body.pages[0].id = body.pages[0].id + body.pages[1].id ;
+					request.post('/api/v1/books')
+					.send(body)
+					.set('Accept', 'application/json')
+					.expect(notFoundError)
+					.expect(500, done);
+				});
+		});
+		
 		
 	});
 
