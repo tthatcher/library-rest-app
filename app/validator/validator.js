@@ -7,7 +7,7 @@ var pageSchema = function (isIdRequired) {
 			"text" : {
 				"text" : "string",
 				required : true,
-				"maxLength": 100000
+				"maxLength": 1000
 			},
 			"number" : {
 				"number" : "integer",
