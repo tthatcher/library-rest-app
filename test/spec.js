@@ -67,8 +67,8 @@ function addBook(body, callback) {
 	.send(body)
 	.expect(200)
 	.expect(success)
-	.end(function (err, res) {
-		callback(err, res);
+	.end(function (err) {
+		callback(err);
 	});
 }
 
@@ -271,6 +271,18 @@ describe('Book routes', function () {
 			expectPutResultsInSuccess(body, done);
 		});
 		
+		it('PUT with 1000 character page text does not result in error', function (done) {
+			var body = {title: 'A title', author: 'Author', language:'EN'};
+			body.pages = [{text: stringWithLength(1000), number:1}];;
+			expectPutResultsInSuccess(body, done);
+		});
+		
+		it('PUT with 1001 character page text results in error', function (done) {
+			var body = {title: 'A title', author: 'Author', language:'EN'};
+			body.pages = [{text: stringWithLength(1001), number:1}];
+			expectPutResultsInInvalidSchemaError(body, done);
+		});
+		
 	});
 
 	//POST
@@ -291,6 +303,24 @@ describe('Book routes', function () {
 			.expect(error)
 			.expect(500, done);
 	
+		}
+		
+		function getResults(callback) {
+			request.get('/api/v1/books')
+			.send()
+			.expect('Content-Type', /json/)
+			.expect(200)
+			.end(function(err, res) {
+				callback(err, res);
+			});
+		}
+		
+		function postSucceeds(body, done) {
+			request.post('/api/v1/books')
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(success)
+			.expect(200, done);
 		}
 
 		it('POST with empty request body results in error', function (done) {
@@ -452,20 +482,8 @@ describe('Book routes', function () {
 		
 		it('POST with invalid page number results in failure', function (done) {
 			async.waterfall([
-					function (callback) {
-						addValidBook(function (err, res) {
-							callback(err);
-						});
-					},
-					function (callback) {
-						request.get('/api/v1/books')
-						.send()
-						.expect('Content-Type', /json/)
-						.expect(200)
-						.end(function(err, res) {
-							callback(err, res);
-						});
-					}
+					addValidBook,
+					getResults
 				], function(err,res) {
 					var body = res.body[0];
 					body.pages[0].number = -1;
@@ -504,21 +522,9 @@ describe('Book routes', function () {
 		
 		it('POST with page id that does not exist should result in error', function(done) {
 			async.waterfall([
-					function (callback) {
-						addValidBook(function (err, res) {
-							callback(err);
-						});
-					},
-					function (callback) {
-						request.get('/api/v1/books')
-						.send()
-						.expect('Content-Type', /json/)
-						.expect(200)
-						.end(function(err, res) {
-							callback(err, res);
-						});
-					}
-				], function(err,res) {
+					addValidBook,
+					getResults
+				], function(err, res) {
 					var body = res.body[0];
 					body.pages[0].id = body.pages[0].id + body.pages[1].id ;
 					request.post('/api/v1/books')
@@ -526,6 +532,50 @@ describe('Book routes', function () {
 					.set('Accept', 'application/json')
 					.expect(notFoundError)
 					.expect(500, done);
+				});
+		});
+		
+		it('POST with page text equal to 1000 characters succeeds', function(done) {
+			async.waterfall([
+					addValidBook,
+					getResults
+				], function(err, res) {
+					var body = res.body[0];
+					body.pages[0].text = stringWithLength(1000)
+					postSucceeds(body, done);
+				});
+		});
+		
+		it('POST with book title equal to 500 characters succeeds', function(done) {
+			async.waterfall([
+					addValidBook,
+					getResults
+				], function(err, res) {
+					var body = res.body[0];
+					body.title = stringWithLength(500);
+					postSucceeds(body, done);
+				});
+		});
+		
+		it('POST with book author equal to 100 characters succeeds', function(done) {
+			async.waterfall([
+					addValidBook,
+					getResults
+				], function(err, res) {
+					var body = res.body[0];
+					body.author = stringWithLength(100);
+					postSucceeds(body, done);
+				});
+		});
+		
+		it('POST with book language equal to 2 characters succeeds', function(done) {
+			async.waterfall([
+					addValidBook,
+					getResults
+				], function(err, res) {
+					var body = res.body[0];
+					body.language = stringWithLength(2);
+					postSucceeds(body, done);
 				});
 		});
 		
