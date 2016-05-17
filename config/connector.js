@@ -25,7 +25,8 @@ module.exports.connect = function (app) {
 				});
 			}
 		], function (err) {
-		if (err)
+		if (err) {
 			throw err;
+		}
 	});
 };
