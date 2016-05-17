@@ -1,5 +1,5 @@
 "use strict";
-module.exports = function (db, cb) {
+module.exports = function (db, callback) {
 	var Book = db.define('book', {
 			title : String,
 			author : String,
@@ -17,5 +17,5 @@ module.exports = function (db, cb) {
 
 	Book.hasMany("pages", Page);
 
-	cb();
+	callback();
 };

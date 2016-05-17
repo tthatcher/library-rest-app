@@ -100,7 +100,6 @@ describe('Book routes', function () {
 		cleanupData(done);
 	});
 
-	//GET
 	describe('GET books - ', function () {
 		it('GET with empty table Should fetch empty body', function (done) {
 			request.get('/api/v1/books')
@@ -139,7 +138,6 @@ describe('Book routes', function () {
 		});
 	});
 
-	//PUT
 	describe('PUT books - ', function () {
 	
 		function expectPutResultsInInvalidSchemaError(body, done) {
@@ -285,7 +283,6 @@ describe('Book routes', function () {
 		
 	});
 
-	//POST
 	describe('POST books - ', function () {
 	
 		function expectPostResultsInNotFoundError(body, done) {
@@ -582,7 +579,6 @@ describe('Book routes', function () {
 		
 	});
 
-	//DELETE
 	describe('DELETE books - ', function () {
 
 		it('DELETE with empty request body results in error', function (done) {

@@ -7,8 +7,6 @@ var app = express();
 
 var bodyParser = require('body-parser');
 
-//TODO Add Headers here
-//TODO AUTH
 app.use(bodyParser.json());
 
 connector.connect(app);
