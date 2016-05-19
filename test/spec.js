@@ -307,9 +307,7 @@ describe('Book routes', function () {
 			.send()
 			.expect('Content-Type', /json/)
 			.expect(200)
-			.end(function(err, res) {
-				callback(err, res);
-			});
+			.end(callback);
 		}
 		
 		function postSucceeds(body, done) {
@@ -318,6 +316,46 @@ describe('Book routes', function () {
 			.set('Accept', 'application/json')
 			.expect(success)
 			.expect(200, done);
+		}
+				
+		function expectPostResultsInNotFound(body, id, callback) {
+			request.post('/api/v1/books')
+			.send(body)
+			.set('Accept', 'application/json')
+			.expect(notFoundError)
+			.expect(500)
+			.end(function(err, res) {
+				callback(err, id);
+			});
+		}
+		
+		function expectGetMatchesInput(expected, done) {
+			request.get('/api/v1/books')
+			.send()
+			.expect('Content-Type', /json/)
+			.expect(200)
+			.expect(expected, done);
+		}
+		
+		function createExpectedForValidBody(res) {
+		
+			function mergePage(page) {
+				var newPage = validBody.pages.filter(thisPage => thisPage.number === page.number)[0];
+				newPage.id = page.id;
+				return newPage;
+			}
+		
+			var body = res.body[0];
+			var expected = [{
+					title : validBody.title,
+					author : validBody.author,
+					language : validBody.language,
+					id : body.id,
+					pages : body.pages.map(mergePage)
+				}
+			];
+			
+			return expected;
 		}
 
 		it('POST with empty request body results in error', function (done) {
@@ -517,18 +555,48 @@ describe('Book routes', function () {
 			expectPostResultsInNotFoundError(body, done);	
 		});
 		
-		it('POST with page id that does not exist should result in error', function(done) {
+		it('POST with page id that does not exist should result in error and not cause update to any pages', function(done) {
 			async.waterfall([
 					addValidBook,
-					getResults
+					getResults,
+					function(res, callback) {
+						var body = res.body[0];
+						body.pages[0].text = 'New text';
+						body.pages[0].id = body.pages[0].id + body.pages[1].id ;
+						expectPostResultsInNotFound(body, null, callback);
+					},
+					function(id, callback) {
+						getResults(callback);
+					}
 				], function(err, res) {
-					var body = res.body[0];
-					body.pages[0].id = body.pages[0].id + body.pages[1].id ;
-					request.post('/api/v1/books')
-					.send(body)
-					.set('Accept', 'application/json')
-					.expect(notFoundError)
-					.expect(500, done);
+					var expected = createExpectedForValidBody(res);
+					expectGetMatchesInput(expected, done);
+				});
+		});
+		
+		it('POST with page id that does not exist should result in error but pages prior to the error will be updated', function(done) {
+			async.waterfall([
+					addValidBook,
+					getResults,
+					function(res, callback) {
+						var body = res.body[0];
+						body.pages[0].text = 'New text';
+						body.pages[1].id = body.pages[0].id + body.pages[1].id ;
+						expectPostResultsInNotFound(body, body.pages[0].id, callback);
+					},
+					function(id, callback) {
+						getResults(function(err, res) {
+							callback(err, res, id);
+						});
+					}
+				], function(err, res, id) {
+					var expected = createExpectedForValidBody(res);
+					expected[0].pages.forEach(page => {
+						if(page.id === id) {
+							page.text = 'New text';
+						}
+					});
+					expectGetMatchesInput(expected, done);
 				});
 		});
 		
@@ -575,7 +643,6 @@ describe('Book routes', function () {
 					postSucceeds(body, done);
 				});
 		});
-		
 		
 	});
 
