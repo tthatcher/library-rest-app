@@ -318,14 +318,14 @@ describe('Book routes', function () {
 			.expect(200, done);
 		}
 				
-		function expectPostResultsInNotFound(body, callback) {
+		function expectPostResultsInNotFound(body, id, callback) {
 			request.post('/api/v1/books')
 			.send(body)
 			.set('Accept', 'application/json')
 			.expect(notFoundError)
 			.expect(500)
 			.end(function(err, res) {
-				callback(err);
+				callback(err, id);
 			});
 		}
 		
@@ -564,9 +564,11 @@ describe('Book routes', function () {
 						var body = res.body[0];
 						body.pages[0].text = 'New text';
 						body.pages[0].id = body.pages[0].id + body.pages[1].id ;
-						expectPostResultsInNotFound(body, callback);
+						expectPostResultsInNotFound(body, null, callback);
 					},
-					getResults
+					function(id, callback) {
+						getResults(callback);
+					}
 				], function(err, res) {
 					var expected = createExpectedForValidBody(res);
 					expectGetMatchesInput(expected, done);
@@ -581,12 +583,20 @@ describe('Book routes', function () {
 						var body = res.body[0];
 						body.pages[0].text = 'New text';
 						body.pages[1].id = body.pages[0].id + body.pages[1].id ;
-						expectPostResultsInNotFound(body, callback);
+						expectPostResultsInNotFound(body, body.pages[0].id, callback);
 					},
-					getResults
-				], function(err, res) {
+					function(id, callback) {
+						getResults(function(err, res) {
+							callback(err, res, id);
+						});
+					}
+				], function(err, res, id) {
 					var expected = createExpectedForValidBody(res);
-					expected[0].pages[0].text = 'New text';
+					expected[0].pages.forEach(page => {
+						if(page.id === id) {
+							page.text = 'New text';
+						}
+					});
 					expectGetMatchesInput(expected, done);
 				});
 		});
