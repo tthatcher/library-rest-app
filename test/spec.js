@@ -338,24 +338,23 @@ describe('Book routes', function () {
 		}
 		
 		function createExpectedForValidBody(res) {
+		
+			function mergePage(page) {
+				var newPage = validBody.pages.filter(thisPage => thisPage.number === page.number)[0];
+				newPage.id = page.id;
+				return newPage;
+			}
+		
 			var body = res.body[0];
 			var expected = [{
 					title : validBody.title,
 					author : validBody.author,
 					language : validBody.language,
 					id : body.id,
-					pages : [{
-							id : body.pages[0].id,
-							text : validBody.pages[0].text,
-							number : validBody.pages[0].number
-						}, {
-							id : body.pages[1].id,
-							text : validBody.pages[1].text,
-							number : validBody.pages[1].number
-						}
-					]
+					pages : body.pages.map(mergePage)
 				}
 			];
+			
 			return expected;
 		}
 
